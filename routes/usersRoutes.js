@@ -4,11 +4,17 @@ const bcrypt = require("bcryptjs");
 const userRouter = express.Router();
 const User = require("../models/userModel");
 const generateToken = require("../config/utlis");
+const isAuth = require("../middlewares/authMiddleware");
 
 userRouter.post(
   "/register",
   expressAsyncHandler(async (req, res) => {
-    if (!req.body.name || !req.body.email || !req.body.password) {
+    if (
+      !req.body.name ||
+      !req.body.email ||
+      !req.body.password ||
+      !req.body.number
+    ) {
       return res.status(401).send({
         message: "Fields are missing",
         status: 401,
@@ -24,6 +30,7 @@ userRouter.post(
     const user = new User({
       name: req.body.name,
       email: req.body.email,
+      number: req.body.number,
       password: bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10)),
     });
     const registeredUser = await user.save();
@@ -53,10 +60,10 @@ userRouter.post(
     if (bcrypt.compareSync(req.body.password, isUserExist.password)) {
       return res.status(200).send({
         _id: isUserExist._id,
-        _id: isUserExist._id,
         name: isUserExist.name,
         email: isUserExist.email,
-        isAdmin: isUserExist.isAdmin,
+        number: isUserExist.number,
+        wishlist: isUserExist.wishlist,
         token: generateToken(isUserExist),
       });
     } else {
@@ -64,6 +71,31 @@ userRouter.post(
         message: "Invalid Credentials",
       });
     }
+  })
+);
+
+userRouter.post(
+  "/add-wishlist",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    if (!req.body.productId) {
+      return res.status(401).send({
+        message: "productId is missing",
+      });
+    }
+    const user = await User.findById(req.user._id);
+    if (user.wishlist.includes(req.body.productId)) {
+      const updateResponse = await User.findOneAndUpdate(
+        { _id: req.user._id },
+        { $pull: { wishlist: req.body.productId } }
+      );
+    } else {
+      const updateResponse = await User.findOneAndUpdate(
+        { _id: req.user._id },
+        { $push: { wishlist: req.body.productId } }
+      );
+    }
+    return res.status(200).send({ status: 201, message: "wishlist manage" });
   })
 );
 

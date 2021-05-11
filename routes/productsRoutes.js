@@ -27,18 +27,22 @@ productRouter.post(
 productRouter.post(
   "/get-product-list",
   expressAsyncHandler(async (req, res) => {
-    const limit = req.body.limit || 9;
-    let skip = (req.body.page - 1) * 9 || 0;
+    const limit = req.body.limit || 12;
+    let skip = (req.body.page - 1) * 12 || 0;
     const productList = await Product.find().skip(skip).limit(limit);
+    let productcount = await Product.countDocuments();
+    productcount = Math.ceil(productcount / limit);
     if (productList) {
       return res.status(200).send({
         message: "product list fetched successfully",
         data: productList,
+        totalProduct: productcount,
       });
     } else {
       return res.status(200).send({
         message: "product list fetched successfully",
         data: [],
+        totalProduct: 0,
       });
     }
   })

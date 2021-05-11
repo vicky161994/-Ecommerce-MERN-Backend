@@ -9,10 +9,17 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    number: {
+      type: String,
+      required: true,
+    },
     password: {
       type: String,
       required: true,
     },
+    wishlist: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: false },
+    ],
   },
   {
     timestamps: true,
