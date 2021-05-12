@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
     wishlist: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: false },
     ],
+    cartItems: [],
   },
   {
     timestamps: true,

@@ -64,6 +64,7 @@ userRouter.post(
         email: isUserExist.email,
         number: isUserExist.number,
         wishlist: isUserExist.wishlist,
+        cartItems: isUserExist.cartItems,
         token: generateToken(isUserExist),
       });
     } else {
@@ -96,6 +97,23 @@ userRouter.post(
       );
     }
     return res.status(200).send({ status: 201, message: "wishlist manage" });
+  })
+);
+
+userRouter.post(
+  "/add-to-cart",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    if (!req.body) {
+      return res
+        .status(401)
+        .send({ status: 401, message: "Cart items missing" });
+    }
+    await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { cartItems: req.body.cartItems }
+    );
+    return res.status(201).send({ message: "Cart managed" });
   })
 );
 
