@@ -10,8 +10,10 @@ const PORT = process.env.PORT || 4000;
 app.get("/", (req, res) => res.send("server connected successfully!"));
 const userRoute = require("./routes/usersRoutes");
 const porductRoute = require("./routes/productsRoutes");
+const cartRoute = require("./routes/cartsRoutes");
 app.use("/api/users", userRoute);
 app.use("/api/products", porductRoute);
+app.use("/api/carts", cartRoute);
 app.listen(PORT, () =>
   console.log(`server is up and running on port: ${PORT}`)
 );

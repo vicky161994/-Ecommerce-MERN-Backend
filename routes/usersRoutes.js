@@ -5,6 +5,7 @@ const userRouter = express.Router();
 const User = require("../models/userModel");
 const generateToken = require("../config/utlis");
 const isAuth = require("../middlewares/authMiddleware");
+const mongoose = require("mongoose");
 
 userRouter.post(
   "/register",
@@ -109,9 +110,17 @@ userRouter.post(
         .status(401)
         .send({ status: 401, message: "Cart items missing" });
     }
+    let finalData = [];
+    req.body.cartItems.forEach(async (element) => {
+      let _id = mongoose.Types.ObjectId(element.productId);
+      let data = { productId: _id, qty: element.qty };
+      finalData.push(data);
+    });
     await User.findOneAndUpdate(
       { _id: req.user._id },
-      { cartItems: req.body.cartItems }
+      {
+        cartItems: finalData,
+      }
     );
     return res.status(201).send({ message: "Cart managed" });
   })
