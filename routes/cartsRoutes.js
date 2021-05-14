@@ -56,3 +56,41 @@ cartRouter.post(
   })
 );
 module.exports = cartRouter;
+
+cartRouter.post(
+  "/manage-item-qty",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    await User.updateOne(
+      {
+        _id: mongoose.Types.ObjectId(req.user._id),
+        "cartItems.productId": mongoose.Types.ObjectId(req.body.productId),
+      },
+      {
+        $set: { "cartItems.$.qty": req.body.qty },
+      }
+    );
+    return res.status(200).send({ status: 200, message: "quantity changed" });
+  })
+);
+
+cartRouter.post(
+  "/unauth-get-cart-item-list",
+  expressAsyncHandler(async (req, res) => {
+    const cartIDs = req.body.cartItems.map((cart) => cart.productId);
+    let cartItems = await Product.find({
+      _id: { $in: cartIDs },
+    });
+    const finanlData = [];
+    cartItems = cartItems.map((cart, index) => {
+      req.body.cartItems.map((product, index) => {
+        if (product.productId == cart._id) {
+          const data = { cartList: cart, qty: product.qty };
+          finanlData.push(data);
+          return finanlData;
+        }
+      });
+    });
+    return res.status(200).send({ data: finanlData });
+  })
+);
