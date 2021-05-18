@@ -66,6 +66,7 @@ userRouter.post(
         number: isUserExist.number,
         wishlist: isUserExist.wishlist,
         cartItems: isUserExist.cartItems,
+        address: isUserExist.address,
         token: generateToken(isUserExist),
       });
     } else {
@@ -123,6 +124,26 @@ userRouter.post(
       }
     );
     return res.status(201).send({ message: "Cart managed" });
+  })
+);
+
+userRouter.post(
+  "/add-address",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    if (!req.body) {
+      return res.status(401).send({ status: 401, message: "address missing" });
+    }
+    const user = await User.findById(req.user._id);
+    const updateResponse = await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { $push: { address: req.body } }
+    );
+    const updatedUser = await User.findById(req.user._id, {
+      address: 1,
+      _id: 0,
+    });
+    return res.status(201).send(updatedUser);
   })
 );
 
