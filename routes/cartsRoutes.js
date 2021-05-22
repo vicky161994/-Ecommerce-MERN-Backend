@@ -10,7 +10,6 @@ cartRouter.get(
   "/get-cart-item-list",
   isAuth,
   expressAsyncHandler(async (req, res) => {
-    console.log("fdsfdsafds");
     const stages = [
       { $unwind: "$cartItems" },
       {
