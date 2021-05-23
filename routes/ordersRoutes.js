@@ -53,6 +53,17 @@ orderRouter.post(
       })
       .catch((error) => {
         console.log(error);
+        const order = new Order({
+          userID: req.user._id,
+          items: items,
+          address: address,
+          itemPrice: req.body.totalAmt,
+          shippingPrice: req.body.shippingPrice,
+          taxPrice: req.body.taxPrice,
+          totalPrice: totalPrice,
+          status: "Payment Failed",
+        });
+        order.save();
         res.status(404).json(error);
       });
   })
