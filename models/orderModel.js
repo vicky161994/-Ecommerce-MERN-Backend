@@ -14,7 +14,23 @@ const orderSchema = new mongoose.Schema(
       type: Array,
       required: true,
     },
+    itemPrice: {
+      type: String,
+      required: true,
+    },
+    shippingPrice: {
+      type: String,
+      required: true,
+    },
+    taxPrice: {
+      type: String,
+      required: true,
+    },
     totalPrice: {
+      type: String,
+      required: true,
+    },
+    status: {
       type: String,
       required: true,
     },
