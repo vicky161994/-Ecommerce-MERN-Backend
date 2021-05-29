@@ -6,6 +6,9 @@ const User = require("../models/userModel");
 const generateToken = require("../config/utlis");
 const isAuth = require("../middlewares/authMiddleware");
 const mongoose = require("mongoose");
+const fetch = require("node-fetch");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 userRouter.post(
   "/register",
@@ -228,4 +231,105 @@ userRouter.post(
   })
 );
 
+userRouter.post(
+  "/login-with-facebook",
+  expressAsyncHandler(async (req, res) => {
+    const { accessToken, userID } = req.body;
+    let urlGraphFacebook = `https://graph.facebook.com/v2.11/${userID}/?fields=id,name,email&access_token=${accessToken}`;
+    await fetch(urlGraphFacebook, { method: "GET" })
+      .then((response) => response.json())
+      .then(async (json) => {
+        const { email, name } = json;
+        if (!email || !name) {
+          return res.status(401).send({
+            status: 401,
+            message: "Fields are required",
+          });
+        }
+        const isUserExist = await User.findOne({ email: email });
+        if (!isUserExist) {
+          const user = new User({
+            name: name,
+            email: email,
+            number: null,
+            loggedInVia: "Facebook",
+          });
+          const registeredUser = await user.save();
+          return res.status(200).send({
+            _id: registeredUser._id,
+            name: registeredUser.name,
+            email: registeredUser.email,
+            number: registeredUser.number,
+            wishlist: registeredUser.wishlist,
+            cartItems: registeredUser.cartItems,
+            address: registeredUser.address,
+            token: generateToken(registeredUser),
+          });
+        } else {
+          return res.status(200).send({
+            _id: isUserExist._id,
+            name: isUserExist.name,
+            email: isUserExist.email,
+            number: isUserExist.number,
+            wishlist: isUserExist.wishlist,
+            cartItems: isUserExist.cartItems,
+            address: isUserExist.address,
+            token: generateToken(isUserExist),
+          });
+        }
+      });
+  })
+);
+
+userRouter.post(
+  "/login-with-google",
+  expressAsyncHandler(async (req, res) => {
+    const { tokenId } = req.body;
+    client
+      .verifyIdToken({
+        idToken: tokenId,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      })
+      .then(async (response) => {
+        const { email_verified, name, email } = response.payload;
+        if (!email || !name) {
+          return res.status(401).send({
+            status: 401,
+            message: "Fields are required",
+          });
+        }
+        const isUserExist = await User.findOne({ email: email });
+        if (!isUserExist) {
+          const user = new User({
+            name: name,
+            email: email,
+            number: null,
+            loggedInVia: "Google",
+          });
+          const registeredUser = await user.save();
+          return res.status(200).send({
+            _id: registeredUser._id,
+            name: registeredUser.name,
+            email: registeredUser.email,
+            number: registeredUser.number,
+            wishlist: registeredUser.wishlist,
+            cartItems: registeredUser.cartItems,
+            address: registeredUser.address,
+            token: generateToken(registeredUser),
+          });
+        } else {
+          return res.status(200).send({
+            _id: isUserExist._id,
+            name: isUserExist.name,
+            email: isUserExist.email,
+            number: isUserExist.number,
+            wishlist: isUserExist.wishlist,
+            cartItems: isUserExist.cartItems,
+            address: isUserExist.address,
+            token: generateToken(isUserExist),
+          });
+        }
+      });
+  })
+);
 module.exports = userRouter;

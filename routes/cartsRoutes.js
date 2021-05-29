@@ -11,6 +11,7 @@ cartRouter.get(
   isAuth,
   expressAsyncHandler(async (req, res) => {
     const stages = [
+      { $match: { _id: { $eq: mongoose.Types.ObjectId(req.user._id) } } },
       { $unwind: "$cartItems" },
       {
         $lookup: {
@@ -27,6 +28,7 @@ cartRouter.get(
     cartItems = cartItems.map((cart, index) => {
       return { cartList: cart.cartList, qty: cart.cartItems.qty };
     });
+    console.log(cartItems);
     return res.status(200).send({ data: cartItems });
   })
 );
@@ -55,7 +57,6 @@ cartRouter.post(
     return res.status(200).send({ status: 200, data: updatedcartItems });
   })
 );
-module.exports = cartRouter;
 
 cartRouter.post(
   "/manage-item-qty",
@@ -94,3 +95,5 @@ cartRouter.post(
     return res.status(200).send({ data: finanlData });
   })
 );
+
+module.exports = cartRouter;

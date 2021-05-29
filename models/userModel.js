@@ -11,11 +11,15 @@ const userSchema = new mongoose.Schema(
     },
     number: {
       type: String,
-      required: true,
+      required: false,
     },
     password: {
       type: String,
-      required: true,
+      required: false,
+    },
+    loggedInVia: {
+      type: String,
+      required: false,
     },
     wishlist: [
       { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: false },
