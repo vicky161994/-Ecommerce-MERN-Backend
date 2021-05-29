@@ -147,4 +147,85 @@ userRouter.post(
   })
 );
 
+userRouter.post(
+  "/delete-address",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const { index } = req.body;
+    let address = await User.find(
+      { _id: req.user._id },
+      { address: 1, _id: 0 }
+    );
+    address[0].address.splice(index, 1);
+    await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { address: address[0].address }
+    );
+    return res.status(200).send("ADDRESS_DELETED");
+  })
+);
+
+userRouter.post(
+  "/edit-address",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const {
+      index,
+      fullName,
+      number,
+      pinCode,
+      state,
+      city,
+      houseNumber,
+      roadName,
+    } = req.body;
+    let address = await User.find(
+      { _id: req.user._id },
+      { address: 1, _id: 0 }
+    );
+    await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { $set: { address: [] } }
+    );
+    let addressForEdit = address[0].address[index];
+    addressForEdit.fullName = fullName;
+    addressForEdit.number = number;
+    addressForEdit.pinCode = pinCode;
+    addressForEdit.state = state;
+    addressForEdit.city = city;
+    addressForEdit.houseNumber = houseNumber;
+    addressForEdit.roadName = roadName;
+    address[0].address[index] = addressForEdit;
+    await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { $push: { address: address[0].address } }
+    );
+    const updatedUser = await User.findById(req.user._id, {
+      address: 1,
+      _id: 0,
+    });
+    return res.status(201).send(updatedUser);
+  })
+);
+
+userRouter.post(
+  "/update-personal-detail",
+  isAuth,
+  expressAsyncHandler(async (req, res) => {
+    const { name, number } = req.body;
+    if (!name && !number) {
+      return res.status(401).send({ status: 401, message: "Field missing" });
+    }
+    if (name) {
+      await User.findByIdAndUpdate(req.user._id, { name: name });
+    }
+    if (number) {
+      await User.findByIdAndUpdate(req.user._id, { number: number });
+    }
+    return res
+      .status(200)
+      .send({ status: 200, message: "PROFILE_DETAIL_CHANGE" });
+  })
+);
+
 module.exports = userRouter;

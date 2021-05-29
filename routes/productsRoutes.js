@@ -29,8 +29,15 @@ productRouter.post(
   expressAsyncHandler(async (req, res) => {
     const limit = req.body.limit || 12;
     let skip = (req.body.page - 1) * 12 || 0;
-    const productList = await Product.find().skip(skip).limit(limit);
-    let productcount = await Product.countDocuments();
+    var searchQuery = {};
+    if (req.body.filterKeyword) {
+      searchQuery.title = {
+        $regex: req.body.filterKeyword.trim(),
+        $options: "i",
+      };
+    }
+    const productList = await Product.find(searchQuery).skip(skip).limit(limit);
+    let productcount = await Product.countDocuments(searchQuery);
     productcount = Math.ceil(productcount / limit);
     if (productList) {
       return res.status(200).send({

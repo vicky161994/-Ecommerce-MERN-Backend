@@ -81,7 +81,9 @@ orderRouter.post(
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
-    let orderCount = await Order.countDocuments();
+    let orderCount = await Order.countDocuments({
+      userID: mongoose.Types.ObjectId(req.user._id),
+    });
     orderCount = Math.ceil(orderCount / limit);
     if (order) {
       return res.status(200).send({
