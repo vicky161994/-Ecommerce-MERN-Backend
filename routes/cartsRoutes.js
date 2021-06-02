@@ -28,7 +28,6 @@ cartRouter.get(
     cartItems = cartItems.map((cart, index) => {
       return { cartList: cart.cartList, qty: cart.cartItems.qty };
     });
-    console.log(cartItems);
     return res.status(200).send({ data: cartItems });
   })
 );
