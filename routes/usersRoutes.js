@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const userRouter = express.Router();
 const User = require("../models/userModel");
 const generateToken = require("../config/utlis");
+const sendSMS = require("../config/helpers");
 const isAuth = require("../middlewares/authMiddleware");
 const mongoose = require("mongoose");
 const fetch = require("node-fetch");
@@ -38,6 +39,11 @@ userRouter.post(
       password: bcrypt.hashSync(req.body.password, bcrypt.genSaltSync(10)),
     });
     const registeredUser = await user.save();
+    sendSMS({
+      message:
+        "Thank you for register with us. Please visit our wesite and place your first order",
+      number: req.body.number,
+    });
     res.send({
       message: "User Registered Successfully",
       status: "201",
@@ -332,4 +338,5 @@ userRouter.post(
       });
   })
 );
+
 module.exports = userRouter;
